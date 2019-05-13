@@ -63,19 +63,25 @@ def getTemp():
 	return val
 
 def onecycle( ):
+	# first turn on both compressor separately, giving a wait between two
 	turnOn(1)
 	time.sleep(5)
 	turnOn(2)
+	# wait about 2 min to get them turned on
 	time.sleep(110)
+	# check if a compressor consumes reasonably power
 	while getPower(1)<1100:
 		time.sleep(3)
 	time.sleep(5)
-	while getPower(1)<1100:
+	# check another compressor
+	while getPower(2)<1100:
 		time.sleep(3)
+	# run compressors for 1 min, then turn themm off
 	time.sleep(60)
 	turnOff(1)
 	time.sleep(5)
 	turnOff(2)
+	# wait for 10 min
 	time.sleep(600)
 
 if __name__ == "__main__":
