@@ -66,6 +66,7 @@ def onecycle( ):
 	turnOn(1)
 	time.sleep(5)
 	turnOn(2)
+	time.sleep(110)
 	while getPower(1)<1100:
 		time.sleep(3)
 	time.sleep(5)
@@ -75,6 +76,7 @@ def onecycle( ):
 	turnOff(1)
 	time.sleep(5)
 	turnOff(2)
+	time.sleep(600)
 
 if __name__ == "__main__":
 	while getTemp()>-40:
