@@ -50,10 +50,10 @@ def getPower( compid ):
 
 def getTemp():
 	tempref = [
+		"Cold_Temp/CLP-RTD-02",
 		"Cold_Temp/CLP-RTD-03",
-		"Cold_Temp/CLP-RTD-05",
-		"Cold_Temp/CLP-RTD-50",
-		"Cold_Temp/CLP-RTD-55"
+		"Cold_Temp/CLP-RTD-52",
+		"Cold_Temp/CLP-RTD-53"
 	]
 	temparr = []
 	for aref in tempref:
@@ -62,7 +62,7 @@ def getTemp():
 	print "Averaged temp = %f" % val
 	return val
 
-def onecycle( ):
+def Phase1( ):
 	# first turn on both compressor separately, giving a wait between two
 	turnOn(1)
 	time.sleep(5)
@@ -78,15 +78,41 @@ def onecycle( ):
 		time.sleep(3)
 	# run compressors for 1 min, then turn themm off
 	time.sleep(60)
+
+	if getTemp()<-35:
+		# exit this phase keeping the compressor system running.
+		return False
+
 	turnOff(1)
 	time.sleep(5)
 	turnOff(2)
 	# wait for 10 min
 	time.sleep(600)
 
+	return True
+
+def Phase2():
+	# set trim heater setpoint at -40C
+	thermal.setPlateTemperature(0, -40.0)
+	thermal.setPlateTemperature(1, -40.0)
+	thermal.setPlateTemperature(2, -40.0)
+
+	# turn on trim heaters
+	thermal.setTrimHeaterState(0, 1)
+	thermal.setTrimHeaterState(1, 1)
+	thermal.setTrimHeaterState(2, 1)
+
+	# turn on aux heaters
+	thermal.setAuxHeaterPower(2,300)
+	thermal.setAuxHeaterPower(0,150)
+	thermal.setAuxHeaterPower(1,150)
+
 if __name__ == "__main__":
-	while getTemp()>-40:
-		# onecycle( )
+	while Phase1():
 		time.sleep(3)
+	
+	Phase2()
+
+
 
 
