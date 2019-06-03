@@ -34,13 +34,13 @@ def turnOn( compid ):
 # Turn on Cold1/Cold2
 	target="Cold{}".format(compid)
 	print "turnOn %s" % target
-#	comp = getattr(refrig,target)().setSwitchOn(0,True)
+	comp = getattr(refrig,target)().setSwitchOn(0,True)
 
 def turnOff( compid ):
 # Turn on Cold1/Cold2
 	target="Cold{}".format(compid)
 	print "turnOff %s" % target
-#	comp = getattr(refrig,target)().setSwitchOff(0,False)
+	comp = getattr(refrig,target)().setSwitchOn(0,False)
 
 def getPower( compid ):
 	target="Cold{}".format(compid)
@@ -68,15 +68,17 @@ def Phase1( ):
 	time.sleep(5)
 	turnOn(2)
 	# wait about 2 min to get them turned on
+	print "Wait 110 sec"
 	time.sleep(110)
 	# check if a compressor consumes reasonably power
-	while getPower(1)<1100:
+	while getPower(1)<1000:
 		time.sleep(3)
 	time.sleep(5)
 	# check another compressor
-	while getPower(2)<1100:
+	while getPower(2)<1000:
 		time.sleep(3)
 	# run compressors for 1 min, then turn themm off
+	print "Wait 60 sec"
 	time.sleep(60)
 
 	if getTemp()<-35:
@@ -86,8 +88,9 @@ def Phase1( ):
 	turnOff(1)
 	time.sleep(5)
 	turnOff(2)
-	# wait for 10 min
-	time.sleep(600)
+	print "wait 450 sec"
+	# wait for 450 sec 
+	time.sleep(450)
 
 	return True
 
@@ -95,24 +98,26 @@ def Phase2():
 	# set trim heater setpoint at -40C
 	thermal.setPlateTemperature(0, -40.0)
 	thermal.setPlateTemperature(1, -40.0)
-	thermal.setPlateTemperature(2, -40.0)
 
 	# turn on trim heaters
 	thermal.setTrimHeaterState(0, 1)
 	thermal.setTrimHeaterState(1, 1)
-	thermal.setTrimHeaterState(2, 1)
 
-	# turn on aux heaters
+	# set aux heater power
 	thermal.setAuxHeaterPower(2,300)
 	thermal.setAuxHeaterPower(0,150)
 	thermal.setAuxHeaterPower(1,150)
 
+	# turn on aux heaters
+	thermal.setAuxHeaterState(0,1)
+	thermal.setAuxHeaterState(1,1)
+	thermal.setAuxHeaterState(2,1)
+
 if __name__ == "__main__":
+	print "Phase1"
 	while Phase1():
-		time.sleep(3)
-	
+		print getTemp()
+
+	print "Phase2"
 	Phase2()
-
-
-
 
