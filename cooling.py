@@ -97,16 +97,16 @@ def Phase1( ):
 def Phase2():
 	# set trim heater setpoint at -40C
 	thermal.setPlateTemperature(0, -40.0)
-	thermal.setPlateTemperature(1, -40.0)
+#	thermal.setPlateTemperature(1, -40.0)
 
 	# turn on trim heaters
-	thermal.setTrimHeaterState(0, 1)
-	thermal.setTrimHeaterState(1, 1)
+	thermal.setTrimHeaterState(0, -1)
+#	thermal.setTrimHeaterState(1, -1)
 
 	# set aux heater power
-	thermal.setAuxHeaterPower(2,300)
-	thermal.setAuxHeaterPower(0,150)
-	thermal.setAuxHeaterPower(1,150)
+	thermal.setAuxHeaterPower(2,450)
+	thermal.setAuxHeaterPower(0,200)
+	thermal.setAuxHeaterPower(1,200)
 
 	# turn on aux heaters
 	thermal.setAuxHeaterState(0,1)
