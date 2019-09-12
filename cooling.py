@@ -12,6 +12,7 @@ import math
 import time
 import argparse
 import logging
+import ConfigParser
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -62,8 +63,7 @@ def getTemp():
 	print "Averaged temp = %f" % val
 	return val
 
-def Phase1( ):
-
+def Phase1( waittime, trimheatwatt, runtime  ):
 	# 1. Start cold1 compressor.  Cold1 compressor will spin after 2 minutes delay.
 	turnOn(1)
 	print "Wait 110 sec"
@@ -76,23 +76,22 @@ def Phase1( ):
 	print "Turn on trim heaters"
 	thermal.enableColdSection(0, True)  # check Enable -Y cold htrs
 	thermal.enableColdSection(1, False)  # uncheck Enable +Y cold htrs
-	thermal.setTrimHeaterPower(0,150) # 0: -Y
+	thermal.setTrimHeaterPower(0,trimheatwatt) # 0: -Y
 	thermal.setTrimHeaterState(0, 1)  # running at fixed power
 
 	# 3. Switch off cold1 compressor and trim heater after cold1 compressor has a run time of 2 minutes.
-	print "waits for 120sec"
-	time.sleep(120)
+	print "waits for %d sec" % runtime
+	time.sleep(runtime)
 	print "shut off heaters and compressor"
 	thermal.setTrimHeaterState(0, 0)  # 
 	turnOff(1)
 
 	if getTemp()<-35:
-		# exit this phase keeping the compressor system running.
 		return False
 
-	print "waits for 480s"
+	print "waits for %f" % waittime
 	# 4. Eight (8) minutes later, start cold2 compressor.  Cold2 compressor will spin after 2 minutes delay.
-	time.sleep(480)
+	time.sleep(waittime)
 
 	turnOn(2)
 	print "Wait 110 sec"
@@ -105,23 +104,22 @@ def Phase1( ):
 	print "Turn on trim heaters"
 	thermal.enableColdSection(0, False)  # uncheck Enable -Y cold htrs
 	thermal.enableColdSection(1, True)  # check Enable +Y cold htrs
-	thermal.setTrimHeaterPower(0,150) # 0: -Y
+	thermal.setTrimHeaterPower(0,trimheatwatt) # 0: -Y
 	thermal.setTrimHeaterState(0, 1)  # running at fixed power
 
 	# 6. Switch off cold2 compressor and trim heater after cold2 compressor has a run time of 2 minutes.
-	print "Wait 120 sec"
-	time.sleep(120)
+	print "waits for %d sec" %  runtime
+	time.sleep(runtime)
 	print "shut off heaters and compressor"
 	thermal.setTrimHeaterState(0, 0)
 	turnOff(2)
 
 	if getTemp()<-35:
-		# exit this phase keeping the compressor system running.
 		return False
 
 	# 7. Eight (8) minutes later, return to step 1.
-	print "waits for 480s"
-	time.sleep(480)
+	print "waits for %f" % waittime
+	time.sleep(waittime)
 
 	return True
 
@@ -154,9 +152,21 @@ def Phase2():
 #	thermal.setAuxHeaterState(1,0) # -Y
 	thermal.setAuxHeaterState(2,1) # +Y
 
+
 if __name__ == "__main__":
+	config = ConfigParser.ConfigParser()
+	config.read("config.cfg")
+	waittime = int(config.get("default","waittime"))
+	trimheatwatt = int(config.get("default","trimheatwatt"))
+	runtime = int(config.get("default","runtime"))
+	print ( waittime, trimheatwatt, runtime )
 	print "Phase1"
-	while Phase1():
+	while Phase1( waittime, trimheatwatt, runtime ):
+		config.read("config.cfg")
+		waittime = int(config.get("running","waittime"))
+		trimheatwatt = int(config.get("running","trimheatwatt"))
+		runtime = int(config.get("running","runtime"))
+		print ( waittime, trimheatwatt, runtime )
 		print getTemp()
 
 	print "Phase2"
