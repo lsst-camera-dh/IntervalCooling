@@ -143,14 +143,14 @@ def Phase2():
 
 	# set aux heater power
 	print "Turn on aux heaters"
-	thermal.setAuxHeaterPower(2,300) # center
 	thermal.setAuxHeaterPower(0,0) # -Y
 	thermal.setAuxHeaterPower(1,150) # +Y
+	thermal.setAuxHeaterPower(2,300) # center
 
 	# turn on aux heaters
-	thermal.setAuxHeaterState(0,1) # center
-#	thermal.setAuxHeaterState(1,0) # -Y
-	thermal.setAuxHeaterState(2,1) # +Y
+#	thermal.setAuxHeaterState(0,0) # -Y
+	thermal.setAuxHeaterState(1,1) # +Y
+	thermal.setAuxHeaterState(2,1) # center
 
 
 if __name__ == "__main__":
