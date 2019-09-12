@@ -50,10 +50,10 @@ def getPower( compid ):
 
 def getTemp():
 	tempref = [
-		"Cold_Temp/CLP-RTD-02",
+#		"Cold_Temp/CLP-RTD-02",
 		"Cold_Temp/CLP-RTD-03",
-		"Cold_Temp/CLP-RTD-52",
-		"Cold_Temp/CLP-RTD-53"
+#		"Cold_Temp/CLP-RTD-52",
+#		"Cold_Temp/CLP-RTD-53"
 	]
 	temparr = []
 	for aref in tempref:
@@ -63,55 +63,84 @@ def getTemp():
 	return val
 
 def Phase1( ):
-	# first turn on both compressor separately, giving a wait between two
+
+	# 1. Start cold1 compressor.  Cold1 compressor will spin after 2 minutes delay.
 	turnOn(1)
-	time.sleep(5)
-	turnOn(2)
-	# wait about 2 min to get them turned on
 	print "Wait 110 sec"
 	time.sleep(110)
 	# check if a compressor consumes reasonably power
 	while getPower(1)<1000:
 		time.sleep(3)
-	time.sleep(5)
-	# check another compressor
-	while getPower(2)<1000:
-		time.sleep(3)
-	# run compressors for 1 min, then turn themm off
-	print "Wait 60 sec"
-	time.sleep(60)
+
+	# 2. Set trim heater at 150 W with -Y set at diabled once cold1 compressor spins.
+	thermal.enableColdSection(0, False)  # uncheck Enable -Y cold htrs
+	thermal.enableColdSection(1, True)  # check Enable +Y cold htrs
+	thermal.setTrimHeaterPower(0,150) # 0: -Y
+	thermal.setTrimHeaterState(0, 1)  # running at fixed power
+
+	# 3. Switch off cold1 compressor and trim heater after cold1 compressor has a run time of 2 minutes.
+	time.sleep(120)
+	thermal.setTrimHeaterState(0, 0)  # 
+	turnOff(1)
 
 	if getTemp()<-35:
 		# exit this phase keeping the compressor system running.
 		return False
 
-	turnOff(1)
-	time.sleep(5)
+	# 4. Eight (8) minutes later, start cold2 compressor.  Cold2 compressor will spin after 2 minutes delay.
+	time.sleep(480)
+
+	turnOn(2)
+	print "Wait 110 sec"
+	time.sleep(110)
+	# check if a compressor consumes reasonably power
+	while getPower(2)<1000:
+		time.sleep(3)
+
+	# 5. Set trim heater at 150 W with +Y set at diabled once cold2 compressor spins.
+	thermal.enableColdSection(0, True)  # uncheck Enable -Y cold htrs
+	thermal.enableColdSection(1, False)  # check Enable +Y cold htrs
+	thermal.setTrimHeaterPower(0,150) # 0: -Y
+	thermal.setTrimHeaterState(0, 1)  # running at fixed power
+
+	# 6. Switch off cold2 compressor and trim heater after cold2 compressor has a run time of 2 minutes.
+	time.sleep(120)
+	thermal.setTrimHeaterState(0, 0)
 	turnOff(2)
-	print "wait 450 sec"
-	# wait for 450 sec 
-	time.sleep(450)
+
+	if getTemp()<-35:
+		# exit this phase keeping the compressor system running.
+		return False
+
+	# 7. Eight (8) minutes later, return to step 1.
+	time.sleep(480)
 
 	return True
 
 def Phase2():
-	# set trim heater setpoint at -40C
-	thermal.setPlateTemperature(0, -40.0)
-#	thermal.setPlateTemperature(1, -40.0)
+	# first turn on both compressor separately, giving a wait between two
+	if getPower(1)<1000:
+		turnOn(1)
+		time.sleep(5)
+	if getPower(2)<1000:
+		turnOn(2)
 
+	# set trim heater 
+	thermal.setPlateTemperature(0, -40.0) # cold
+#	thermal.setPlateTemperature(1, -40.0) # cryo
 	# turn on trim heaters
-	thermal.setTrimHeaterState(0, -1)
-#	thermal.setTrimHeaterState(1, -1)
+	thermal.setTrimHeaterState(0, -1) # cold
+#	thermal.setTrimHeaterState(1, -1) # cryo
 
 	# set aux heater power
-	thermal.setAuxHeaterPower(2,450)
-	thermal.setAuxHeaterPower(0,200)
-	thermal.setAuxHeaterPower(1,200)
+	thermal.setAuxHeaterPower(2,300) # center
+	thermal.setAuxHeaterPower(0,0) # -Y
+	thermal.setAuxHeaterPower(1,150) # +Y
 
 	# turn on aux heaters
-	thermal.setAuxHeaterState(0,1)
-	thermal.setAuxHeaterState(1,1)
-	thermal.setAuxHeaterState(2,1)
+	thermal.setAuxHeaterState(0,1) # center
+#	thermal.setAuxHeaterState(1,0) # -Y
+	thermal.setAuxHeaterState(2,1) # +Y
 
 if __name__ == "__main__":
 	print "Phase1"
