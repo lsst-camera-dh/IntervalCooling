@@ -135,7 +135,9 @@ def Phase2():
 
 	# set trim heater 
 	print "Turn on trim heaters"
-	thermal.setPlateTemperature(0, -40.0) # cold
+	thermal.enableColdSection(0, True)  # check Enable -Y cold htrs
+	thermal.enableColdSection(1, True)  # check Enable +Y cold htrs
+	thermal.setPlateTemperature(0, -38.0) # cold
 #	thermal.setPlateTemperature(1, -40.0) # cryo
 	# turn on trim heaters
 	thermal.setTrimHeaterState(0, -1) # cold
@@ -143,7 +145,7 @@ def Phase2():
 
 	# set aux heater power
 	print "Turn on aux heaters"
-	thermal.setAuxHeaterPower(0,0) # -Y
+#	thermal.setAuxHeaterPower(0,0) # -Y
 	thermal.setAuxHeaterPower(1,150) # +Y
 	thermal.setAuxHeaterPower(2,300) # center
 
